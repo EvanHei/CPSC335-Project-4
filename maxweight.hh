@@ -231,8 +231,24 @@ std::unique_ptr<FoodVector> filter_food_vector
 	int total_size
 )
 {
-    // TODO: implement this function, then delete the return statement below
-    return nullptr;
+ // the filtered list and its size
+std::unique_ptr<FoodVector> result(new FoodVector);
+int size = 0;
+
+// for every FoodItem
+for (int index = 0; index < source.size() - 1; index++)
+{
+	auto foodItemPointer = source[index];
+	double weight = foodItemPointer->weight();
+	
+	if ((weight >= min_weight && weight <= max_weight) && (size < total_size))
+	{
+		result->push_back(foodItemPointer); // add the food item pointer
+		size++;
+	}
+}
+
+return result;
 }
 
 
@@ -247,8 +263,53 @@ std::unique_ptr<FoodVector> exhaustive_max_calories
 	double total_weight
 )
 {
-// TODO: implement this function, then delete the return statement below
-    return nullptr;
+int n = foods.size();
+double bestCalorie = 0.0;
+std::unique_ptr<FoodVector> result(new FoodVector); // pointer the the final FoodVector
+
+for (uint64_t bits = 0; bits <= std::pow(2, n) - 1; bits++)
+{
+	std::unique_ptr<FoodVector> candidate(new FoodVector); // candidate subset
+	
+	for (int j = 0; j <= n - 1; j++)
+	{
+		if (((bits >> j) & 1) == 1)
+		{
+			candidate->push_back(foods[j]);
+		}
+	}
+
+	// sum up the candidate's weight and calories
+	double candidateCalories = 0.0;
+	double candidateWeight = 0.0;
+
+	for (auto iter = candidate->begin(); iter != candidate->end(); iter++)
+	{
+		candidateCalories += (*iter)->calorie();
+		candidateWeight += (*iter)->weight();
+	}
+	
+	if (candidateWeight <= total_weight)
+		if (result->empty() || candidateCalories > bestCalorie)
+		{			
+			result->clear();
+			
+			for (auto iter = candidate->begin(); iter != candidate->end(); iter++)
+			{
+				result->push_back(*iter);
+			}
+			
+			// sum up the best's calories
+			bestCalorie = 0.0;
+			for (auto iter = result->begin(); iter != result->end(); iter++)
+			{
+				bestCalorie += (*iter)->calorie();
+			}
+		}
+
+}
+
+return result;
 }
 
 // Compute the optimal set of food items with dynamic programming.
@@ -283,6 +344,51 @@ std::unique_ptr<FoodVector> exhaustive_max_weight
 	double total_calorie
 )
 {
-// TODO: implement this function, then delete the return statement below
-	return nullptr;
+int n = foods.size();
+double bestWeight = 0.0;
+std::unique_ptr<FoodVector> result(new FoodVector); // pointer the the final FoodVector
+
+for (uint64_t bits = 0; bits <= std::pow(2, n) - 1; bits++)
+{
+	std::unique_ptr<FoodVector> candidate(new FoodVector); // candidate subset
+	
+	for (int j = 0; j <= n - 1; j++)
+	{
+		if (((bits >> j) & 1) == 1)
+		{
+			candidate->push_back(foods[j]);
+		}
+	}
+
+	// sum up the candidate's weight and calories
+	double candidateCalories = 0.0;
+	double candidateWeight = 0.0;
+
+	for (auto iter = candidate->begin(); iter != candidate->end(); iter++)
+	{
+		candidateCalories += (*iter)->calorie();
+		candidateWeight += (*iter)->weight();
+	}
+	
+	if (candidateCalories <= total_calorie)
+		if (result->empty() || candidateWeight > bestWeight)
+		{			
+			result->clear();
+			
+			for (auto iter = candidate->begin(); iter != candidate->end(); iter++)
+			{
+				result->push_back(*iter);
+			}
+			
+			// sum up the best's weight
+			bestWeight = 0.0;
+			for (auto iter = result->begin(); iter != result->end(); iter++)
+			{
+				bestWeight += (*iter)->weight();
+			}
+		}
+
+}
+
+return result;
 }
