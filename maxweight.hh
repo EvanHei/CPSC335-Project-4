@@ -19,7 +19,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
+#include <iomanip>
+using namespace std;
 
 // One food item available for purchase.
 class FoodItem
@@ -323,15 +324,79 @@ std::unique_ptr<FoodVector> dynamic_max_weight
 	double total_calories
 )
 {
-    std::vector<std::vector<double>> T;
-	std::unique_ptr<FoodVector> source(new FoodVector(foods));
-	std::unique_ptr<FoodVector> best(new FoodVector);
-	// print_food_vector(*todo);
-    
-    // TODO: implement this function, then delete the return statement below
-	return nullptr;
+std::vector<std::vector<double>> cache;
+std::unique_ptr<FoodVector> items(new FoodVector(foods));
+std::unique_ptr<FoodVector> best(new FoodVector); // list of food items used to maximize weight
+int maxItemIndex = items->size(); // total items along left column. Correlates to n in pseudocode
+int maxCalories = int(total_calories); // total calories along top row. Correlates to w in pseudocode
+std::vector<double> weights = { 0 }; // weights (values). Leave [0] as 0 because indexing for pseudocode starts at 1. Correlates to V in pseudocode
+std::vector<int> calories = { 0 }; // calories (costs). Leave [0] as 0 because indexing for pseudocode starts at 1. Correlates to X in pseudocode
+
+// initialize vectors weights and calories
+for (const auto& element : foods)
+{
+	weights.push_back(element->weight());
+	calories.push_back(element->calorie());
 }
 
+// set cache dimensions
+cache.resize(maxItemIndex + 1);
+for (auto& element : cache)
+	element.assign(maxCalories + 1, 0); // fill with 0's
+
+
+/**************** Populate the cache ****************/
+for (int i = 1; i <= maxItemIndex; i++) // for items {1, 2, ... maxItemIndex}
+	for (int j = 0; j <= maxCalories; j++) // for calories {0, 1, ... maxCalories}
+	{
+		if (j - calories[i] < 0) // avoid out-of-bounds access
+			cache[i][j] = cache[i - 1][j];
+		else
+			if (cache[i - 1][j - calories[i]] + weights[i] > cache[i - 1][j])
+				cache[i][j] = cache[i - 1][j - calories[i]] + weights[i];
+			else
+				cache[i][j] = cache[i - 1][j];
+		
+		// display computation of cache[i][j]
+		/*if (maxCalories <= 14)
+		{
+			//cout << "\n\ncalories[" << i << "] = " << calories[i];
+			//cout << ", weights[" << i << "] = " << weights[i];
+			cout << "\ncache[" << i << "][" << j << "] = max(cache[" << i << "-1][" 
+			     << j << "], cache[" << i <<"-1][" << j << "-calories[" << i << "]] + weights[" << i << "]) = " << cache[i][j];
+		}*/
+	}
+// display maximum weight possible within a calorie limit
+// cout << "\ncache[maxItemIndex][maxCalories]: " << cache[maxItemIndex][maxCalories];
+
+// rebuild the list of items used
+int item = maxItemIndex;
+int calorieLimit = maxCalories;
+while (item != 0 && calorieLimit != 0)
+{
+	// display the two options for backtracking
+	/*if (maxCalories <= 14)
+	{
+		cout << "\ncache[item (" << item << ")][calorieLimit (" << calorieLimit << ")]: " << cache[item][calorieLimit];
+		cout << "\ncache[item-1][calorieLimit]: " << cache[item-1][calorieLimit];
+	}*/
+	
+	if (cache[item][calorieLimit] == cache[item - 1][calorieLimit]) // if the cell is the same as above
+		item--; // go to the row above
+	else // if the cell is different from the cell above
+	{
+		// display the item being included
+		/*if (maxCalories <= 14)
+			cout << "\nIncluding item: " << item << "\n";*/
+		
+		// include the item, go X[item] places to the left and up a row
+		best->push_back(foods[item - 1]);
+		calorieLimit -= calories[item];
+		item--;
+	}
+}
+return best;
+}
 
 // Compute the optimal set of food items with a exhaustive search algorithm.
 // Specifically, among all subsets of food items, return the subset 
