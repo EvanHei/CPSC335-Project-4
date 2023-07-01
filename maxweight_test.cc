@@ -92,7 +92,7 @@ int main()
 	);
 	//
 	rubric.criterion(
-		"dynamic_max_calories correctness", 4,
+		"dynamic_max_weight correctness", 4,
 		[&]()
 		{
 			std::unique_ptr<FoodVector> soln_small, soln_large;

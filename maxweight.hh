@@ -258,7 +258,7 @@ return result;
 // whose weight in ounces fits within the total_weight one can carry and
 // whose total calories is greatest.
 // To avoid overflow, the size of the food items vector must be less than 64.
-std::unique_ptr<FoodVector> exhaustive_max_calories
+/*std::unique_ptr<FoodVector> exhaustive_max_calories
 (
 	const FoodVector& foods,
 	double total_weight
@@ -311,7 +311,7 @@ for (uint64_t bits = 0; bits <= std::pow(2, n) - 1; bits++)
 }
 
 return result;
-}
+}*/
 
 // Compute the optimal set of food items with dynamic programming.
 // Specifically, among the food items that fit within a total_calories,
